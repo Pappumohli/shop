@@ -1,0 +1,63 @@
+
+public class SharedPrefManager {
+    private  static String PREF_NAME ="socialcodia";
+    private static SharedPrefManager mInstance;
+    private static SharedPreferences sp;
+    private Context context;
+
+    public SharedPrefManager(Context context) {
+        this.context = context;
+    }
+    public static  synchronized SharedPrefManager getInstance(Context context){
+
+        if(mInstance==null){
+            mInstance = new SharedPrefManager(context);
+        }
+        return mInstance;
+
+    }
+
+    public void saveUser(User user){
+        sp = context.getSharedPreferences(PREF_NAME,Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor= sp.edit();
+        editor.putString("id", user.getID());
+        editor.putString("name",user.getName());
+        editor.putString("email",user.getEmail());
+
+        editor.putBoolean("logged",true) ;
+        editor.apply();
+
+    }
+
+    public  boolean isLogedIn() {
+        sp = context.getSharedPreferences(PREF_NAME, context.MODE_PRIVATE);
+        String isLogin = sp.getString("id",null);
+        if (isLogin!=null) {
+            return true;
+        } else {
+            return false;
+
+        }
+    }
+    // ye method
+    public User getUser(){
+        sp = context.getSharedPreferences(PREF_NAME,context.MODE_PRIVATE);
+        return new User(sp.getString("id",null), sp.getString("name", null), sp.getString("email", null));
+    }
+
+
+
+
+    public void logout() {
+
+
+        sp = context.getSharedPreferences(PREF_NAME, context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.clear();
+        editor.apply();
+
+
+    }
+
+
+}

@@ -1,0 +1,138 @@
+ private void setAdapter(List<GetResponse.Datum> list) {
+        ResponseAdapter adapter = new ResponseAdapter(this,list);
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(manager);
+        recyclerView.setAdapter(adapter);
+
+
+
+    }
+///coll
+  if(!Patterns.EMAIL_ADDRESS.matcher(useremail).matches()){
+                email.setError("please enter vailed email");
+                email.requestFocus();
+                return;
+
+            }
+  Intent intent = new Intent(LoginActivity.this,HomeActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+
+  Call<GetResponse> call = RetrofitClient.getInstance().getApi().fetch();
+ setAdapter(Arrays.asList(response.body().getData()));
+//Apiinterface
+
+public interface Api {
+
+@Multipart
+@POST("signup.php")
+Call<SignupResponse> signupwithimage(@Part MultipartBody.Part file,
+                                     @Part MultipartBody.Part name,
+                                     @Part MultipartBody.Part email,
+                                     @Part MultipartBody.Part password,
+                                     @Part MultipartBody.Part address,
+                                     @Part MultipartBody.Part pro
+
+);
+
+@FormUrlEncoded
+@POST("login.php")
+Call<LoginResponse>login(@Field("email")String email,@Field("password")String pass);
+
+
+
+    @GET("fetchalluser.php")
+    Call<GetResponse> fetch();
+
+
+
+
+
+
+    @POST("fetchsingleuser.php?id=")
+Call<GetResponse>fetchsingle(@Query("id")String ids);
+
+
+    @POST("fetchsameaddress.php?address=")
+    Call<GetResponse>fetchsameaddress(@Query("address")String address);
+
+
+
+}
+
+
+
+//ApiInterface
+
+///permisson
+ <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+
+///close
+
+
+//retrofitclient
+
+public class RetrofitClient {
+
+    private static Retrofit retrofit ;
+    private static RetrofitClient retrofitClient;
+    private static String BASE_URL = "http://192.168.140.184/Test/";
+
+private RetrofitClient(){
+    retrofit = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+}
+public static synchronized RetrofitClient getInstance(){
+    if(retrofitClient==null){
+        retrofitClient = new RetrofitClient();
+    }
+    return retrofitClient;
+}
+
+public Api getApi(){
+    return retrofit.create(Api.class);
+}
+
+
+}
+
+///Adapter pass or picsso setimage
+   Picasso.get().load("http://192.168.140.184/Test/images/"+list.get(position).getImage()).placeholder(R.drawable.ic_launcher_background).fit().into(holder.imageView);
+        holder.name.setText(list.get(position).getName());
+        holder.email.setText(list.get(position).getEmail());
+        holder.add.setText(list.get(position).getAddress());
+        holder.professional.setText(list.get(position).getProfessional());
+
+       holder.imageView.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View view) {
+
+               Intent intent = new Intent(context,ShowActivity.class);
+               intent.putExtra("name",list.get(position).getName());
+               intent.putExtra("id",list.get(position).getID());
+               intent.putExtra("email",list.get(position).getEmail());
+               intent.putExtra("adress",list.get(position).getAddress());
+               intent.putExtra("pro",list.get(position).getProfessional());
+
+
+               context.startActivity(intent);
+
+///
+
+//data recived;
+
+  String usergetname;
+   public static  String userid;
+
+    String useremail,address,profession;
+
+ usergetname = getIntent().getStringExtra("name");
+        userid = getIntent().getStringExtra("id");
+        useremail=getIntent().getStringExtra("email");
+        address=getIntent().getStringExtra("adress");
+        profession=getIntent().getStringExtra("pro");
+      //  MultipartBody.Part bodyadd = MultipartBody.Part.createFormData("id",userid);
+        Call<GetResponse>call = RetrofitClient.getInstance().getApi().fetchsingle(userid);
+

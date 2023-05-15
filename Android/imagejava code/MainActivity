@@ -1,0 +1,176 @@
+public class MainActivity extends AppCompatActivity {
+
+    TextInputEditText username,useremail,useraddress,password,pro;
+    ImageView  selectimage,setImage;
+    ActivityResultLauncher<Intent>galleryLouncher;
+    AppCompatButton button;
+    Bitmap bitmap;
+    String imagePath;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        button = findViewById(R.id.save);
+        username = findViewById(R.id.name);
+        useremail = findViewById(R.id.email);
+        useraddress = findViewById(R.id.address);
+        pro = findViewById(R.id.pro);
+
+        password = findViewById(R.id.pass);
+        selectimage = findViewById(R.id.selectimage);
+        setImage = findViewById(R.id.setimage);
+
+
+        selectimage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+
+                galleryLouncher.launch(intent);
+            }
+        });
+
+        galleryLouncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    Uri uri = data.getData();
+
+                     imagePath = getRealPathFromUrl(uri);
+                    try {
+                      bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                        if(bitmap!=null){
+                            setImage.setImageBitmap(bitmap);
+                        }else{
+                            Toast.makeText(MainActivity.this, "please select email", Toast.LENGTH_SHORT).show();
+                        }
+
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Toast.makeText(MainActivity.this, "please select ", Toast.LENGTH_SHORT).show();
+
+                    }
+                }
+
+            }
+        });
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String uname = username.getText().toString().trim();
+                String uemail = useremail.getText().toString().trim();
+                String upass = password.getText().toString().trim();
+                String uaddress = useraddress.getText().toString().trim();
+                String uprofessional = pro.getText().toString().trim();
+
+
+                if(uname.isEmpty()){
+                    username.setError("please enter full name");
+                    username.requestFocus();
+                    return;
+                }
+
+                if(uemail.isEmpty()){
+                    useremail.setError("please enter full name");
+                    useremail.requestFocus();
+                    return;
+                }
+                if(!Patterns.EMAIL_ADDRESS.matcher(uemail).matches()){
+                    useremail.setError("please enter vailed email");
+                    useremail.requestFocus();
+                    return;
+                }
+
+                if(uaddress.isEmpty()){
+                    useraddress.setError("please enter full name");
+                  useraddress.requestFocus();
+                    return;
+                }
+                if(upass.isEmpty()){
+                    password.setError("please enter full name");
+                   password.requestFocus();
+                    return;
+                }
+
+
+                File file = new File(imagePath);
+
+
+
+                RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"),file);
+                MultipartBody.Part body = MultipartBody.Part.createFormData("file",file.getName(),requestBody);
+                MultipartBody.Part bodyn = MultipartBody.Part.createFormData("username",uname);
+                MultipartBody.Part bodye = MultipartBody.Part.createFormData("email",uemail);
+                MultipartBody.Part bodyp = MultipartBody.Part.createFormData("password",upass);
+                MultipartBody.Part bodyadd = MultipartBody.Part.createFormData("address",uaddress);
+                MultipartBody.Part pro = MultipartBody.Part.createFormData("professional",uprofessional);
+
+                Call<SignupResponse> call = RetrofitClient.getInstance().getApi().signupwithimage(body,bodyn,bodye,bodyp,bodyadd,pro);
+
+call.enqueue(new Callback<SignupResponse>() {
+    @Override
+    public void onResponse(Call<SignupResponse> call, Response<SignupResponse> response) {
+        if(response.isSuccessful()){
+            if(response.body().getError().equals("000")){
+                Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+               startActivity(intent);
+                Toast.makeText(MainActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(MainActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }else{
+            Toast.makeText(MainActivity.this, "response failed", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    @Override
+    public void onFailure(Call<SignupResponse> call, Throwable t) {
+        Toast.makeText(MainActivity.this, t.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+
+    }
+});
+
+
+
+            }
+
+
+        });
+
+
+
+
+
+
+
+}
+
+    private String getRealPathFromUrl (Uri uri){
+        String[] projection = {MediaStore.Images.Media.DATA};
+        CursorLoader loder = new CursorLoader(getApplicationContext(), uri, projection, null, null, null);
+        Cursor cursor = loder.loadInBackground();
+        int column_idx = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        String result = cursor.getString(column_idx);
+        cursor.close();
+        return result;
+    }
+
+
+
+
+
+
+
+
+}

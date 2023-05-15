@@ -1,0 +1,17 @@
+<?php
+
+//$con = mysqli_connect('localhost','root','','tester') or die('connection failed');
+
+$db_name = "mysql:host=localhost;dbname=tester;";
+$username = "root";
+$password = "";
+$con= new PDO($db_name,$username,$password) or die('connection error');
+
+?>
+///single record ko fetch karne ke liye query use kiye he 
+ @POST("fetchsingleuser.php?id=")
+Call<GetResponse>fetchsingle(@Query("id")String ids);
+
+
+
+
